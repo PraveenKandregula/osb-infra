@@ -1,0 +1,26 @@
+bin_home: /opt/praveen/Installers
+mw_home: /opt/app/oracle/middleware/OSB
+fmw_installer: fmw_12.1.3.0.0_infrastructure.jar
+osb_installer: fmw_12.1.3.0.0_osb.jar
+java_home: /opt/app/oracle/middleware/jdk
+db_server: 192.168.2.49
+db_port: 1521
+db_instance: SOA
+db_user: sys
+db_role: sysdba
+schema_prefix: OSB
+db_schema_password: Qazw#123
+schema_list: "-component MDS -component IAU -component IAU_APPEND -component IAU_VIEWER -component OPSS -component WLS -component UCSUMS -component SOAINFRA -component STB -component ESS"
+wls_template: "{{ mw_home }}/wlserver/common/templates/wls/wls.jar"
+ws_template: "{{ mw_home }}/oracle_common/common/templates/wls/oracle.wls-webservice-template_12.1.3.jar"
+osb_template: "{{ mw_home }}/osb/common/templates/wls/oracle.osb_template_12.1.3.jar"
+domain_name: TEST1_OSB_DOMAIN
+weblogic_username: weblogic
+weblogic_password: welcome1
+aserver_path: "{{ mw_home }}/user_projects/aserver/domains/{{ domain_name }}"
+mserver_path: "{{ mw_home }}/user_projects/mserver/domains/{{ domain_name }}"
+nm_port: 5556
+ms_port: 8001
+cluster_name: OSB_Cluster
+cluster_address: osb-cluster.com
+cluster_port: 80

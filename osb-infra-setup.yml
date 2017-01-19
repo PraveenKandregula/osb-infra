@@ -1,0 +1,7 @@
+- name: OSB Domain Configuration  
+  hosts: all
+  become: true 
+  become_user: iadmin
+  connection: ssh
+  roles:
+  - configure

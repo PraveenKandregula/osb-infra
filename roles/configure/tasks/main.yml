@@ -133,3 +133,16 @@
   when: inventory_hostname in  groups['osb_managed']
   tags:
   - domain  
+
+- name: Create boot identity for admin
+  file: path={{ aserver_path }}/servers/AdminServer/security state=directory
+  when: inventory_hostname in  groups['osb_admin']
+  tags:
+  - domain
+
+- name: Copyin boot identity for admin
+  template: src=boot.properties dest={{ aserver_path }}/servers/AdminServer/security mode=554
+  when: inventory_hostname in  groups['osb_admin']
+  tags:
+  - domain
+

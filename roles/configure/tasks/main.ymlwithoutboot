@@ -1,13 +1,13 @@
 - name: create middleware folder
   file: path={{ mw_home }} state=directory mode=0755 
-  run_once: true
+  #run_once: true
   tags:
   - infra
 
 - name: Cleaning up installation directories
   file: path={{ mw_home }} state=absent
   ignore_errors: yes 
-  run_once: true
+  #run_once: true
   tags:
   - infra
 
@@ -21,7 +21,7 @@
 
 - name: Install Infra
   shell: "java -jar {{ bin_home }}/{{ fmw_installer }} -silent -responseFile {{ bin_home }}/infra-silent.rsp -invPtrLoc {{ bin_home }}/oraInst.loc > {{ bin_home }}/infra-install.log"
-  run_once: true 
+  #run_once: true 
   tags:
   - infra
 
@@ -41,8 +41,19 @@
   tags:
   - rcu
 
+- name: Define JAVA_HOME for RCU
+  shell: "{{ item }}"
+  with_items:
+  - "cp {{ mw_home }}/oracle_common/bin/rcu {{ mw_home }}/oracle_common/bin/rcu.bkp"
+  - "sed '33 a export JAVA_HOME={{ java_home }}' {{ mw_home }}/oracle_common/bin/rcu > {{ mw_home }}/oracle_common/bin/rcu.new"
+  - "cp {{ mw_home }}/oracle_common/bin/rcu.new {{ mw_home }}/oracle_common/bin/rcu"
+  tags:
+  - infra
+
 - name: Drop schemas
-  shell:  "{{ mw_home }}/oracle_common/bin/rcu -silent -dropRepository -databaseType ORACLE -connectString {{ db_server }}:{{ db_port }}/{{ db_instance }} -dbUser {{ db_user }} -dbRole {{ db_role }} -schemaPrefix {{ schema_prefix }} {{ schema_list }} -f < {{ bin_home }}/password-file.txt"
+  shell: "{{ item }}"  
+  with_items:
+  - "{{ mw_home }}/oracle_common/bin/rcu -silent -dropRepository -databaseType ORACLE -connectString {{ db_server }}:{{ db_port }}/{{ db_instance }} -dbUser {{ db_user }} -dbRole {{ db_role }} -schemaPrefix {{ schema_prefix }} {{ schema_list }} -f < {{ bin_home }}/password-file.txt"
   run_once: true
   ignore_errors: yes
   tags:
@@ -105,8 +116,20 @@
   tags:
   - domain
 
+- name: Fetching packed domain from admin node
+  fetch: src={{ aserver_path }}/templates/{{ domain_name }}.jar dest={{ bin_home }}/ flat=yes
+  when: inventory_hostname in  groups['osb_admin']
+  tags:
+  - domain
+
+- name: Copying packed domain to managed nodes
+  copy: src={{ bin_home }}/{{ domain_name }}.jar dest={{ bin_home }}
+  when: inventory_hostname in  groups['osb_managed']
+  tags:
+  - domain
+
 - name: Running unpack on managed nodes
-  shell: "{{ mw_home }}/oracle_common/common/bin/unpack.sh -domain={{ mserver_path }} -template={{ aserver_path }}/templates/{{ domain_name }}.jar -app_dir={{ mserver_path }}/applications -log={{ bin_home }}/unpack.log -log_priority=debug"
+  shell: "{{ mw_home }}/oracle_common/common/bin/unpack.sh -domain={{ mserver_path }} -template={{ bin_home }}/{{ domain_name }}.jar -app_dir={{ mserver_path }}/applications -log={{ bin_home }}/unpack.log -log_priority=debug"
   when: inventory_hostname in  groups['osb_managed']
   tags:
   - domain  
